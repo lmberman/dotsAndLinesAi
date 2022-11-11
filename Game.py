@@ -22,6 +22,7 @@ class Game(object):
             self.player_two_score = 0
             self.game_tree_depth = game_tree_depth
             self.game_grid = GameGrid()
+            self.game_grid.id = 1
             self.game_grid.with_dimensions(width, height)
             self.game_grid.create_empty_grid()
             self.game_tree = self.generate_game_tree()

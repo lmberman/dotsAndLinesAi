@@ -8,6 +8,7 @@ import pygame
 
 
 class GameGrid(object):
+    id = 0
     dots = []
     lines = []
     boxes = []
@@ -23,8 +24,9 @@ class GameGrid(object):
         self.boxes = []
         self.parentGrid = None
         self.childrenGrids = []
+        self.id = 0
 
-    def __copy__(self, other_game_grid):
+    def copy(self, other_game_grid):
         self.width = other_game_grid.width
         self.height = other_game_grid.height
         self.dots = other_game_grid.dots
