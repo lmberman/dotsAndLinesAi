@@ -39,6 +39,14 @@ def draw_window():
     player_two_rect.center = (text_rect.centerx + 180, HEIGHT / 4)
     WIN.blit(player_two, player_two_rect)
 
+    # whose turn is it?
+    current_turn = STATS_FONT.render(GAME.current_player(), False, GAME.get_player_color(GAME.current_turn))
+    current_turn_rect = current_turn.get_rect()
+
+    current_turn_rect.center = (text_rect.centerx, HEIGHT / 6)
+    WIN.blit(current_turn, current_turn_rect)
+
+    # display results
     for line in GAME.game_grid.lines:
         if line.drawn:
             pygame.draw.line(WIN,
@@ -49,12 +57,43 @@ def draw_window():
     for dot in GAME.game_grid.dots:
         pygame.draw.circle(WIN, HEADER_COLOR, [dot.locationX, dot.locationY], 8)
 
-    # TODO: Need to be able to draw a line on the page
-    # TODO: Once line is chosen, mark it as drawn by user
-    # TODO: If box is completed by move then increase the score (if have time color the box)
-    # TODO: On player one's turn need to use GameTree and Evaluation function to determine next move
-    # TODO: Make move for player one
     pygame.display.update()
+
+
+def draw_line_for_player():
+    mouse_location = pygame.mouse.get_pos()
+    mouse_x = mouse_location.__getitem__(0)
+    mouse_y = mouse_location.__getitem__(1)
+    if mouse_x > 0 and mouse_y > 0:
+        # print("Current mouse location on screen: " + str(mouse_x) + "," + str(mouse_y))
+        line = GAME.find_available_line_on_cursor_location(mouse_location)
+        if line is not None:
+            GAME.make_a_move_based_on_selected_line(line)
+
+
+def play_game():
+    # second player moves first get position of mouse and determine if it is within the game screen limits and within
+    # the domain of any available lines to draw
+    if GAME.current_turn == -1:
+        mouse_location = pygame.mouse.get_pos()
+        mouse_x = mouse_location.__getitem__(0)
+        mouse_y = mouse_location.__getitem__(1)
+        if mouse_x > 0 and mouse_y > 0:
+            # print("Current mouse location on screen: " + str(mouse_x) + "," + str(mouse_y))
+            line = GAME.find_available_line_on_cursor_location(mouse_location)
+            if line is not None:
+                # print("Match found " + str(line.connectingDots[0].locationX) + "," + str(
+                #     line.connectingDots[0].locationY) + ") to ( "
+                #       + str(line.connectingDots[1].locationX) + "," + str(line.connectingDots[1].locationY))
+                pygame.draw.line(WIN,
+                                 GAME.get_player_color(int(GAME.current_turn)),
+                                 (line.connectingDots[0].locationX, line.connectingDots[0].locationY),
+                                 (line.connectingDots[1].locationX, line.connectingDots[1].locationY),
+                                 line.LINE_WIDTH)
+                pygame.display.update()
+    else:
+        # play next move for player
+        GAME.make_a_move_based_on_game_tree()
 
 
 def main():
@@ -67,7 +106,10 @@ def main():
                 # user quit the window
                 GAME.running = False
                 break
+            if event.type == pygame.MOUSEBUTTONDOWN and GAME.current_turn == -1:
+                draw_line_for_player()
             draw_window()
+            play_game()
 
     pygame.quit()
 

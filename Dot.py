@@ -6,7 +6,7 @@ class Dot(object):
     indexY = 0
     width = 4
     locationX = 0
-    locationX = 0
+    locationY = 0
 
     def __init__(self, indexX, indexY):
         self.indexX = indexX

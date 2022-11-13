@@ -1,5 +1,4 @@
 class Box:
-
     box_id = -1
 
     def __init__(self, box_id):
@@ -23,6 +22,18 @@ class Box:
                 self.lines[i] = new_line
 
     def is_complete(self):
+        return int(self.num_of_drawn_lines()) == len(self.lines)
+
+    def num_of_drawn_lines(self):
+        count = 0
         for line in self.lines:
-            if not line.drawn:
-                return False
+            if line.drawn:
+                count = count + 1
+
+        return count
+
+    def has_line(self, line_id):
+        for line in self.lines:
+            if line.array_index == line_id:
+                return True
+        return False
