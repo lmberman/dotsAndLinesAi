@@ -158,17 +158,18 @@ class GameGrid(object):
             2 * number of boxes owned by player, -2 * number of boxes not owned by player
     """
 
-    def evaluate_winning_stats(self):
+    def evaluate_winning_stats(self, player):
         for box in self.boxes:
             line_count = box.num_of_drawn_lines()
             if line_count == 1:
                 """ do nothing since zero points are given for this move """
+                self.utility_value = (self.utility_value + 1) * player
             if line_count == 2:
-                self.utility_value = self.utility_value + 1
+                self.utility_value = (self.utility_value + 2) * player
             if line_count == 3:
-                self.utility_value = self.utility_value - 1
-            if line_count == 4:
-                self.utility_value = 2 * box.owner
+                self.utility_value = (self.utility_value - 3) * player
+            if line_count == 4 and box.owner == player:
+                self.utility_value = 4 * player
         return self.utility_value
 
     def get_owned_boxes(self, owner):

@@ -14,8 +14,9 @@ FPS = 60
 BOLD_FONT_FILE = 'freesansbold.ttf'
 HEADER_FONT = pygame.font.Font(BOLD_FONT_FILE, 32)
 STATS_FONT = pygame.font.Font(BOLD_FONT_FILE, 18)
+GAME_OVER_FONT = pygame.font.Font(BOLD_FONT_FILE, 60)
 BOARD_WIDTH, BOARD_HEIGHT = 4, 4
-GAME_SEARCH_DEPTH = 3
+GAME_SEARCH_DEPTH = 2
 LINE_LENGTH, LINE_WIDTH = 30, 3
 GAME = Game(BOARD_WIDTH, BOARD_HEIGHT, GAME_SEARCH_DEPTH)
 
@@ -56,7 +57,13 @@ def draw_window():
                              line.LINE_WIDTH)
     for dot in GAME.game_grid.dots:
         pygame.draw.circle(WIN, HEADER_COLOR, [dot.locationX, dot.locationY], 8)
+    if GAME.game_over:
+        # winner
+        game_over = GAME_OVER_FONT.render(GAME.display_winner(), False, GAME.get_player_color(GAME.winner))
+        game_over_rect = game_over.get_rect()
 
+        game_over_rect.center = (text_rect.centerx, HEIGHT / 2)
+        WIN.blit(game_over, game_over_rect)
     pygame.display.update()
 
 
@@ -69,6 +76,7 @@ def draw_line_for_player():
         line = GAME.find_available_line_on_cursor_location(mouse_location)
         if line is not None:
             GAME.make_a_move_based_on_selected_line(line)
+    pygame.display.update()
 
 
 def play_game():

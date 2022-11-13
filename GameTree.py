@@ -15,16 +15,16 @@ class GameTree:
     def generate_future_states_to_depth(self, grid, depth, owner):
         # make a new record in adj list if not in adjacency_list
         print("At depth " + str(depth) + " with grid id " + str(grid.id) + " and owner " + str(owner))
-        if depth == 1:
+        if depth == 0:
             # grid.evaluate_winning_stats()
             return
         if len(self.adjacency_list) == 0:
             self.adjacency_list.append(grid)
 
+        # create next layer below root or current grid
         self.create_children_of_grid(grid, owner)
         if len(grid.childrenGrids) > 0:
             print("Adjacency List Size After Children: " + str(len(self.adjacency_list)))
-            self.adjacency_list[grid.id - 1] = grid
             index = 1
             for child in grid.childrenGrids:
                 print(str(index) + ": Moving to the level to create " + str(len(grid.childrenGrids) - (index - 1))
@@ -40,24 +40,22 @@ class GameTree:
             return True
 
     def create_children_of_grid(self, grid, owner):
-        print("Creating a new children for grid " + str(grid.id))
         children = []
-        box_won = False
         child_grid = None
+        retry_again = False
         for line in grid.get_empty_lines():
-            if not box_won:
+            if not retry_again:
                 print("Creating a new child to check if we can win")
                 child_grid = deepcopy(grid)
-                child_grid.id = len(self.adjacency_list) + 1
+                child_grid.id = len(self.adjacency_list)+1
             print("Checking if box won on line: " + str(line.array_index))
             box_won = child_grid.draw_line_and_win_box(line.array_index, owner)
-            if not box_won:
-                print("Box not won by line: " + str(line.array_index))
-                children.append(child_grid)
-                if len(self.adjacency_list) > child_grid.id:
-                    self.adjacency_list[child_grid.id - 1] = child_grid
-                else:
-                    self.adjacency_list.append(child_grid)
+            if box_won:
+                retry_again = True
+            else:
+                retry_again = False
+            children.append(child_grid)
+            self.adjacency_list.append(child_grid)
         grid.childrenGrids = children
 
     """
@@ -65,35 +63,42 @@ class GameTree:
     """
 
     def find_next_move(self, start_node, alpha, beta, player):
-        if start_node is None:
+        if start_node is None or start_node.id == 0:
             # take the current_grid_state to start which is always the root of the tree
             start_node = self.adjacency_list[0]
         else:
             if len(self.adjacency_list) == 0:
-                return start_node.evaluate_winning_stats()
+                return start_node.evaluate_winning_stats(player)
             # get the node from the adjacency list, so we can grab its children
+            print("Start Node Id in find Next Move: " + str(start_node.id) + " and adjacency list size:" + str(
+                len(self.adjacency_list)))
             start_node = self.adjacency_list[start_node.id - 1]
 
         if len(start_node.childrenGrids) == 0:
-            return start_node.evaluate_winning_stats()
+            # terminal node
+            return start_node.evaluate_winning_stats(player)
 
-        value = 1000
+        value = -1000
         for child in start_node.childrenGrids:
-            value_of_next_move = self.find_next_move(child, -alpha, -beta, -player)
-            value = max(value, value_of_next_move)
+            value = max(value, -self.find_next_move(child, -beta, -alpha, -player))
             alpha = max(alpha, value)
             if alpha >= beta:
+                child.utility_value = alpha
                 break
-        start_node.utility_value = value
+            else:
+                child.utility_value = value
         return value
 
     def make_move(self):
-        self.find_next_move(self.adjacency_list[0], 0, 0, 1)
-        if self.adjacency_list[0].utility_value == 0:
-            self.current_grid_state = self.adjacency_list[0].childrenGrids[0]
-            return
-        else:
-            for child in self.adjacency_list[0].childrenGrids:
-                if child.utility_value == self.adjacency_list[0].utility_value:
-                    self.current_grid_state = self.adjacency_list[child.id - 1]
-                    break
+        move_value = self.find_next_move(self.adjacency_list[0], -1000, 1000, 1)
+        max_value = move_value
+        next_move = None
+        for node in self.adjacency_list[0].childrenGrids:
+            if node.utility_value >= max_value:
+                max_value = node.utility_value
+                next_move = node
+        if next_move is None:
+            next_move = self.adjacency_list[0]
+        self.current_grid_state = self.adjacency_list[next_move.id - 1]
+        self.current_grid_state.id = 1
+

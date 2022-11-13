@@ -12,6 +12,10 @@ class Game(object):
     game_grid = None
     game_tree = None
     running = False
+    game_over = False
+    width = 0
+    height = 0
+    winner = 0
 
     # Initialize Game with 0 points for each player, a given size, and a given search depth
     def __init__(self, width, height, game_tree_depth):
@@ -25,6 +29,8 @@ class Game(object):
             self.game_grid.id = 1
             self.game_grid.with_dimensions(width, height)
             self.game_grid.create_empty_grid()
+            self.width = width
+            self.height = height
 
     def update_player_score(self, number, score):
         if number == 1:
@@ -76,6 +82,11 @@ class Game(object):
     def update_score(self):
         self.player_one_score = self.game_grid.get_owned_boxes(1)
         self.player_two_score = self.game_grid.get_owned_boxes(-1)
+        print("Total: " + str(self.player_one_score + self.player_two_score))
+        print("Total box count:" + str(((self.width * (self.height - 2)) + 1)))
+        if int(self.player_one_score + self.player_two_score) == int((self.width * (self.height - 2)) + 1):
+            # game is over
+            self.game_over = True
 
     def find_available_line_on_cursor_location(self, cursor_location):
         return self.game_grid.find_available_line_on_cursor_location(cursor_location)
@@ -85,3 +96,11 @@ class Game(object):
             return "Player 2 Turn"
         else:
             return "Player 1 Turn"
+
+    def display_winner(self):
+        if int(self.player_one_score) > int(self.player_two_score):
+            self.winner = 1
+            return "Player One Wins"
+        else:
+            self.winner = -1
+            return "Player Two Wins"
