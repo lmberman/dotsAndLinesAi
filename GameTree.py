@@ -7,9 +7,11 @@ class GameTree:
     adjacency_list = []
 
     def __init__(self, current_grid_state, depth, player):
+        current_grid_state.childrenGrids.clear()
         self.current_grid_state = deepcopy(current_grid_state)
         self.adjacency_list = []
         self.generate_future_states_to_depth(current_grid_state, depth, player)
+        self.current_grid_state = self.adjacency_list[0]
 
     # TODO: Need fully generated gameTree down to depth
     def generate_future_states_to_depth(self, grid, depth, owner):
@@ -31,7 +33,6 @@ class GameTree:
                       + "children of grid id: " + str(grid.id))
                 self.generate_future_states_to_depth(child, depth - 1, owner * -1)
                 index = index + 1
-            self.current_grid_state = self.adjacency_list[0]
 
     def is_in_adjacency_list(self, grid):
         if len(self.adjacency_list) < grid.id:
@@ -68,7 +69,7 @@ class GameTree:
             start_node = self.adjacency_list[0]
         else:
             if len(self.adjacency_list) == 0:
-                return start_node.evaluate_winning_stats(player)
+                return start_node.utility_value * player
             # get the node from the adjacency list, so we can grab its children
             print("Start Node Id in find Next Move: " + str(start_node.id) + " and adjacency list size:" + str(
                 len(self.adjacency_list)))
@@ -76,21 +77,18 @@ class GameTree:
 
         if len(start_node.childrenGrids) == 0:
             # terminal node
-            return start_node.evaluate_winning_stats(player)
+            return start_node.utility_value * player
 
-        value = -1000
+        value = 1000 * player
         for child in start_node.childrenGrids:
-            value = max(value, -self.find_next_move(child, -beta, -alpha, -player))
+            value = max(value, self.find_next_move(child, -beta, -alpha, -player))
             alpha = max(alpha, value)
             if alpha >= beta:
-                child.utility_value = alpha
                 break
-            else:
-                child.utility_value = value
         return value
 
     def make_move(self):
-        move_value = self.find_next_move(self.adjacency_list[0], -1000, 1000, 1)
+        move_value = self.find_next_move(self.adjacency_list[0], 1000, -1000, 1)
         max_value = move_value
         next_move = None
         for node in self.adjacency_list[0].childrenGrids:
@@ -98,7 +96,7 @@ class GameTree:
                 max_value = node.utility_value
                 next_move = node
         if next_move is None:
-            next_move = self.adjacency_list[0]
-        self.current_grid_state = self.adjacency_list[next_move.id - 1]
+            next_move = self.adjacency_list[0].childrenGrids[0]
+        self.current_grid_state = self.adjacency_list[next_move.id-1]
         self.current_grid_state.id = 1
 
