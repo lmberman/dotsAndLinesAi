@@ -70,6 +70,18 @@ class Game(object):
         self.game_tree = self.generate_game_tree()
         self.game_tree.make_move()
         self.game_grid = self.game_tree.current_grid_state
+
+        while self.game_grid.player_completed_box == 1:
+            for root in self.game_tree.adjacency_list:
+                root.childrenGrids.clear()
+            self.game_tree.adjacency_list.clear()
+            del self.game_tree.adjacency_list
+            del self.game_tree
+            self.game_tree = self.generate_game_tree()
+            self.game_tree.make_move()
+            if self.game_grid.id == self.game_tree.current_grid_state.id:
+                break
+            self.game_grid = self.game_tree.current_grid_state
         self.current_turn = self.current_turn * -1
         self.update_score()
 

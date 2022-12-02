@@ -17,6 +17,7 @@ class GameGrid(object):
     width = 0
     height = 0
     utility_value = 0
+    player_completed_box = 0
 
     def __init__(self):
         self.dots = []
@@ -145,6 +146,7 @@ class GameGrid(object):
             if completed_box:
                 self.boxes[box_id].set_owner(owner)
                 completed_a_box = True
+                self.player_completed_box = owner
         self.evaluate_winning_stats(owner)
         return completed_a_box
 
@@ -165,9 +167,9 @@ class GameGrid(object):
             if line_count == 2:
                 self.utility_value = self.utility_value + 1000
             if line_count == 3:
-                self.utility_value = self.utility_value - 7000
+                self.utility_value = self.utility_value - 3000
             if line_count == 4 and box.owner == player:
-                self.utility_value = self.utility_value + 4000
+                self.utility_value = self.utility_value + 8000
         return self.utility_value
 
     def get_owned_boxes(self, owner):
